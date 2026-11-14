@@ -24,12 +24,14 @@ defmodule HydromelWeb.CoopLive.Login do
     <Layouts.app flash={@flash}>
       <div class="mx-auto max-w-md py-8">
         <div class="rounded-3xl border border-amber-200 bg-white p-8 shadow-lg shadow-amber-950/5 space-y-6">
-          <div class="text-center space-y-2">
-            <img
-              src={~p"/images/logo.png"}
-              alt="Logo Merhzinsa"
-              class="mx-auto size-16 object-contain"
-            />
+          <div class="text-center space-y-3">
+            <div class="mx-auto w-fit rounded-full bg-white p-1.5 shadow-md ring-2 ring-amber-300">
+              <img
+                src={~p"/images/logo.png"}
+                alt="Logo Cercle des Druides Merhzinsa"
+                class="size-28 rounded-full object-contain"
+              />
+            </div>
             <h1 class="text-2xl font-extrabold text-stone-900">
               Espace Coopérative Merhzinsa
             </h1>

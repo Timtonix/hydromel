@@ -36,6 +36,7 @@ defmodule Hydromel.Orders.Order do
     field :pickup_status, :string, default: "pending"
     field :pickup_comment, :string
     field :referral_code_used, :string
+    field :adult_certified, :boolean, virtual: true, default: true
 
     belongs_to :coop_member, CoopMember
 
@@ -64,12 +65,16 @@ defmodule Hydromel.Orders.Order do
       :pickup_comment,
       :referral_code_used,
       :custom_label,
-      :custom_label_text
+      :custom_label_text,
+      :adult_certified
     ])
     |> normalize_strings()
     |> normalize_quantities()
     |> validate_required([:first_name, :last_name, :email, :payment_method],
       message: "Ce champ est obligatoire"
+    )
+    |> validate_acceptance(:adult_certified,
+      message: "Vous devez certifier être majeur(e) (18 ans et plus)"
     )
     |> validate_length(:first_name, min: 1, max: 100)
     |> validate_length(:last_name, min: 1, max: 100)

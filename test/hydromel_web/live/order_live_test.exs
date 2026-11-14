@@ -29,7 +29,7 @@ defmodule HydromelWeb.OrderLiveTest do
     assert has_element?(view, "#referral-matched-badge")
     assert has_element?(view, "#live-total-price", "0,00 €")
 
-    # Submit the member's 1st order (1x 75cl => 0,00 €)
+    # Submitting without 18+ certification fails
     view
     |> form("#order-form",
       order: %{
@@ -39,7 +39,26 @@ defmodule HydromelWeb.OrderLiveTest do
         qty_33cl: "0",
         qty_75cl: "1",
         referral_code_used: "THOMAS",
-        payment_method: "cash"
+        payment_method: "cash",
+        adult_certified: "false"
+      }
+    )
+    |> render_submit()
+
+    refute has_element?(view, "#order-confirmation")
+
+    # Submit the Druide's 1st order (1x 75cl => 0,00 €) with 18+ certification checked
+    view
+    |> form("#order-form",
+      order: %{
+        first_name: "Thomas",
+        last_name: "Membre",
+        email: "thomas@merhzinsa.fr",
+        qty_33cl: "0",
+        qty_75cl: "1",
+        referral_code_used: "THOMAS",
+        payment_method: "cash",
+        adult_certified: "true"
       }
     )
     |> render_submit()
@@ -62,7 +81,8 @@ defmodule HydromelWeb.OrderLiveTest do
         qty_75cl: "2",
         referral_code_used: "THOMAS",
         payment_method: "paypal",
-        pickup_comment: "Retrait samedi matin"
+        pickup_comment: "Retrait samedi matin",
+        adult_certified: "true"
       }
     )
     |> render_submit()

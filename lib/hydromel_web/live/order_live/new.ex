@@ -20,14 +20,20 @@ defmodule HydromelWeb.OrderLive.New do
 
     changeset =
       Orders.change_order(
-        %Order{qty_33cl: 0, qty_75cl: 1, payment_method: "wero", custom_label: false},
+        %Order{
+          qty_33cl: 0,
+          qty_75cl: 1,
+          payment_method: "wero",
+          custom_label: false,
+          adult_certified: false
+        },
         %{},
         setting
       )
 
     {:ok,
      socket
-     |> assign(:page_title, "Réservation d'Hydromel")
+     |> assign(:page_title, "Brassin Collectif d'Hydromel")
      |> assign(:setting, setting)
      |> assign(:stats, stats)
      |> assign(:confirmed_order, nil)
@@ -70,7 +76,7 @@ defmodule HydromelWeb.OrderLive.New do
   @impl true
   def handle_event("validate", %{"order" => order_params}, socket) do
     changeset =
-      %Order{}
+      %Order{adult_certified: false}
       |> Orders.change_order(order_params, socket.assigns.setting)
       |> Map.put(:action, :validate)
 
@@ -120,9 +126,13 @@ defmodule HydromelWeb.OrderLive.New do
         "custom_label_text",
         Ecto.Changeset.get_field(source, :custom_label_text) || ""
       )
+      |> Map.put_new(
+        "adult_certified",
+        to_string(Ecto.Changeset.get_field(source, :adult_certified) == true)
+      )
 
     changeset =
-      %Order{}
+      %Order{adult_certified: false}
       |> Orders.change_order(updated_params, socket.assigns.setting)
 
     {:noreply, assign_order_form(socket, changeset, socket.assigns.setting)}
@@ -130,6 +140,7 @@ defmodule HydromelWeb.OrderLive.New do
 
   @impl true
   def handle_event("save", %{"order" => order_params}, socket) do
+    order_params = Map.put_new(order_params, "adult_certified", "false")
     custom_label? = Map.get(order_params, "custom_label") == "true"
 
     label_upload =
@@ -180,7 +191,13 @@ defmodule HydromelWeb.OrderLive.New do
 
     changeset =
       Orders.change_order(
-        %Order{qty_33cl: 0, qty_75cl: 1, payment_method: "wero", custom_label: false},
+        %Order{
+          qty_33cl: 0,
+          qty_75cl: 1,
+          payment_method: "wero",
+          custom_label: false,
+          adult_certified: false
+        },
         %{},
         setting
       )
@@ -258,31 +275,34 @@ defmodule HydromelWeb.OrderLive.New do
       <div class="space-y-8">
         <%!-- Hero Banner --%>
         <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-900 via-amber-800 to-yellow-700 p-6 sm:p-10 text-white shadow-xl shadow-amber-900/15">
-          <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-            <div class="max-w-2xl space-y-3">
+          <div class="relative z-10 flex flex-col-reverse sm:flex-row items-center justify-between gap-6 sm:gap-8">
+            <div class="max-w-xl space-y-3 text-center sm:text-left">
               <div class="inline-flex items-center gap-2 rounded-full bg-amber-400/20 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-amber-200 ring-1 ring-amber-300/30">
                 <img
                   src={~p"/images/logo.png"}
                   alt=""
-                  class="size-4 rounded-sm object-contain"
+                  class="size-5 rounded-full bg-white p-0.5 object-contain"
                 />
-                <span>Prévente Coopérative Merhzinsa</span>
+                <span>Brassin Collectif Merhzinsa</span>
               </div>
               <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">
-                Réservez vos bouteilles d'hydromel
+                Réservez votre part du brassin d'hydromel
               </h1>
               <p class="text-sm sm:text-base text-amber-100/90 leading-relaxed">
-                Cuvée artisanale limitée à <strong>{@stats.target_liters} litres</strong>
-                ! Utilisez le code d'un membre de la coopérative pour obtenir <strong>-1€ par bouteille</strong>, et personnalisez votre étiquette avec votre propre photo et texte.
+                Cuvée collective privée limitée à <strong>{@stats.target_liters} litres</strong>, brassée par nos
+                <strong>Druides</strong>
+                ! Utilisez le code d'un Druide pour réduire votre participation aux frais de <strong>-1€ par bouteille</strong>, et personnalisez votre étiquette avec votre propre photo et texte.
               </p>
             </div>
 
-            <div class="hidden sm:flex shrink-0 items-center justify-center">
-              <img
-                src={~p"/images/logo.png"}
-                alt="Logo Merhzinsa"
-                class="size-24 object-contain drop-shadow-lg transition-transform duration-300 hover:rotate-3 hover:scale-105"
-              />
+            <div class="flex shrink-0 items-center justify-center">
+              <div class="rounded-full bg-white p-2 shadow-2xl shadow-amber-950/50 ring-4 ring-amber-300/70 transition-transform duration-300 hover:rotate-3 hover:scale-105">
+                <img
+                  src={~p"/images/logo.png"}
+                  alt="Logo Cercle des Druides Merhzinsa"
+                  class="size-32 sm:size-40 rounded-full object-contain"
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -417,11 +437,11 @@ defmodule HydromelWeb.OrderLive.New do
                     <div class="flex items-center justify-between py-2.5 text-emerald-700">
                       <div>
                         <span class="font-semibold">
-                          Remise parrainage ({@confirmed_order.referral_code_used})
+                          Remise Code Druide ({@confirmed_order.referral_code_used})
                         </span>
                         <%= if @confirmed_order.coop_member do %>
                           <span class="ml-1 text-xs">
-                            — Parrainé par {@confirmed_order.coop_member.name}
+                            — Druide {@confirmed_order.coop_member.name}
                           </span>
                         <% end %>
                       </div>
@@ -452,7 +472,7 @@ defmodule HydromelWeb.OrderLive.New do
                 </div>
 
                 <div class="flex items-center justify-between border-t border-stone-300 pt-3 text-base">
-                  <span class="font-bold text-stone-900">Total à régler</span>
+                  <span class="font-bold text-stone-900">Participation totale aux frais</span>
                   <span id="confirmed-total" class="text-xl font-extrabold text-amber-700">
                     {OrderNotifier.format_euros(@confirmed_order.total_cents)}
                   </span>
@@ -513,7 +533,9 @@ defmodule HydromelWeb.OrderLive.New do
               <div class="mx-auto flex size-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-800">
                 <.icon name="hero-clock" class="size-7" />
               </div>
-              <h2 class="text-xl font-bold text-stone-900">Prévente momentanément fermée</h2>
+              <h2 class="text-xl font-bold text-stone-900">
+                Réservations du brassin momentanément fermées
+              </h2>
               <p class="mx-auto max-w-lg text-sm text-stone-600 leading-relaxed">
                 {@setting.closed_message}
               </p>
@@ -582,7 +604,7 @@ defmodule HydromelWeb.OrderLive.New do
                             <span class="block text-[11px] font-medium text-emerald-700">
                               {OrderNotifier.format_euros(
                                 max(@setting.price_75cl_cents - @setting.referral_discount_cents, 0)
-                              )} avec code parrain
+                              )} avec code Druide
                             </span>
                           <% end %>
                         </div>
@@ -747,7 +769,7 @@ defmodule HydromelWeb.OrderLive.New do
                   </div>
                 </div>
 
-                <%!-- Referral Code Box --%>
+                <%!-- Referral Code Box (Code Druide) --%>
                 <div class="rounded-2xl border border-amber-200 bg-amber-50/50 p-4 sm:p-5 space-y-2">
                   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="space-y-0.5">
@@ -755,12 +777,14 @@ defmodule HydromelWeb.OrderLive.New do
                         for={@form[:referral_code_used].id}
                         class="text-sm font-bold text-stone-900 flex items-center gap-1.5"
                       >
-                        <.icon name="hero-ticket-solid" class="size-4 text-amber-700" />
-                        <span>Code de parrainage d'un membre Merhzinsa (optionnel)</span>
+                        <.icon name="hero-sparkles-solid" class="size-4 text-amber-700" />
+                        <span>Code d'un Druide Merhzinsa (optionnel)</span>
                       </label>
                       <p class="text-xs text-stone-600">
-                        Bénéficiez de <strong>-1,00 € par bouteille</strong>
-                        et faites grimper votre parrain dans le classement !
+                        Les <strong>Druides</strong>
+                        ont participé au brassage de l'hydromel : entrez le code d'un Druide pour réduire votre participation aux frais de
+                        <strong>-1,00 € par bouteille</strong>
+                        !
                       </p>
                     </div>
 
@@ -783,13 +807,13 @@ defmodule HydromelWeb.OrderLive.New do
                       <.icon name="hero-check-badge-solid" class="size-4 text-emerald-700 shrink-0" />
                       <%= if @free_member_bottle? do %>
                         <span>
-                          🎁 Bienvenue <strong>{@matched_member.name}</strong>
-                          ! C'est la 1ère commande avec votre code : votre bouteille de 75cl (et son étiquette personnalisée) est offerte (0,00 €) !
+                          🧙‍♂️ Salut Druide <strong>{@matched_member.name}</strong>
+                          ! Merci d'avoir participé au brassage : ta 1ère bouteille de 75cl (et son étiquette personnalisée) est offerte (0,00 €) !
                         </span>
                       <% else %>
                         <span>
-                          Code valide ! Parrainé par <strong>{@matched_member.name}</strong>
-                          (-{OrderNotifier.format_euros(@current_discount_cents)} sur votre commande)
+                          Code valide ! Invité par le Druide <strong>{@matched_member.name}</strong>
+                          (-{OrderNotifier.format_euros(@current_discount_cents)} sur ta participation aux frais)
                         </span>
                       <% end %>
                     </div>
@@ -812,7 +836,7 @@ defmodule HydromelWeb.OrderLive.New do
                     </h2>
                     <p class="text-xs text-stone-600 mt-0.5">
                       <strong>Chaque bouteille possède déjà une étiquette basique Merhzinsa collée par défaut.</strong>
-                      Pour +1,00 € / bouteille (offert sur la bouteille gratuite des membres), remplacez-la par votre propre photo et votre texte !
+                      Pour +1,00 € / bouteille (offert sur la bouteille des Druides), remplacez-la par votre propre photo et votre texte !
                     </p>
                   </div>
                 </div>
@@ -938,7 +962,7 @@ defmodule HydromelWeb.OrderLive.New do
                       <div class="flex flex-wrap gap-3 text-xs">
                         <%= if @current_discount_cents > 0 do %>
                           <span class="text-emerald-300 font-semibold">
-                            Parrainage : -{OrderNotifier.format_euros(@current_discount_cents)}
+                            Code Druide : -{OrderNotifier.format_euros(@current_discount_cents)}
                           </span>
                         <% end %>
                         <%= if @current_label_fee_cents > 0 do %>
@@ -1006,13 +1030,13 @@ defmodule HydromelWeb.OrderLive.New do
                     Étape 3
                   </span>
                   <h2 class="text-xl font-bold text-stone-900">
-                    Mode de paiement (hors site) & Récupération
+                    Participation aux frais (hors site) & Récupération
                   </h2>
                 </div>
 
                 <div class="space-y-3">
                   <label class="block text-sm font-semibold text-stone-800">
-                    Comment souhaitez-vous régler votre commande ? *
+                    Comment souhaitez-vous régler votre participation aux frais ? *
                   </label>
 
                   <div class="grid gap-3 sm:grid-cols-3">
@@ -1124,6 +1148,18 @@ defmodule HydromelWeb.OrderLive.New do
                     label="Commentaire sur la récupération de votre commande (optionnel)"
                     placeholder="Ex : Je passerai récupérer ma commande samedi après-midi / Remise via un membre de la coopérative..."
                     class="w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-amber-600 focus:outline-none"
+                  />
+                </div>
+
+                <%!-- Mandatory 18+ & Private Batch Certification --%>
+                <div
+                  id="adult-certification-box"
+                  class="rounded-2xl border-2 border-amber-300 bg-amber-50/50 p-4"
+                >
+                  <.input
+                    field={@form[:adult_certified]}
+                    type="checkbox"
+                    label="Je certifie sur l'honneur être majeur(e) (18 ans et plus) et participer à titre privé aux frais de ce brassin collectif *"
                   />
                 </div>
 

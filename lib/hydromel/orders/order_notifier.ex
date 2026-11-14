@@ -91,7 +91,7 @@ defmodule Hydromel.Orders.OrderNotifier do
 
     line_discount =
       if (order.discount_cents || 0) > 0 do
-        "- Remise parrainage (#{order.referral_code_used}) : -#{format_euros(order.discount_cents)}\n"
+        "- Remise Code Druide (#{order.referral_code_used}) : -#{format_euros(order.discount_cents)}\n"
       else
         ""
       end
@@ -177,7 +177,7 @@ defmodule Hydromel.Orders.OrderNotifier do
 
         """
         <tr>
-          <td colspan="3" style="padding: 10px 0; border-bottom: 1px solid #fde68a; color: #047857;">Remise parrainage (#{code})</td>
+          <td colspan="3" style="padding: 10px 0; border-bottom: 1px solid #fde68a; color: #047857;">Remise Code Druide (#{code})</td>
           <td style="padding: 10px 0; border-bottom: 1px solid #fde68a; text-align: right; font-weight: 600; color: #047857;">-#{format_euros(order.discount_cents)}</td>
         </tr>
         """
@@ -282,7 +282,7 @@ defmodule Hydromel.Orders.OrderNotifier do
             </tbody>
             <tfoot>
               <tr>
-                <td colspan="3" style="padding-top: 14px; font-weight: 700; font-size: 16px; color: #78350f;">Total à régler</td>
+                <td colspan="3" style="padding-top: 14px; font-weight: 700; font-size: 16px; color: #78350f;">Participation totale aux frais</td>
                 <td style="padding-top: 14px; text-align: right; font-weight: 800; font-size: 18px; color: #b45309;">#{format_euros(order.total_cents)}</td>
               </tr>
             </tfoot>

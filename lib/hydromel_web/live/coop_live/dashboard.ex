@@ -141,14 +141,14 @@ defmodule HydromelWeb.CoopLive.Dashboard do
          |> assign(:member_form, to_form(fresh_changeset, as: :coop_member))
          |> put_flash(
            :info,
-           "Membre #{member.name} ajouté avec le code parrainage #{member.referral_code} !"
+           "Druide #{member.name} ajouté avec le code #{member.referral_code} !"
          )}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply,
          socket
          |> assign(:member_form, to_form(changeset, as: :coop_member))
-         |> put_flash(:error, "Impossible d'ajouter ce membre (vérifiez le nom ou le code).")}
+         |> put_flash(:error, "Impossible d'ajouter ce Druide (vérifiez le nom ou le code).")}
     end
   end
 
@@ -160,7 +160,7 @@ defmodule HydromelWeb.CoopLive.Dashboard do
     {:noreply,
      socket
      |> assign(:leaderboard, Orders.list_leaderboard())
-     |> put_flash(:info, "Le membre #{member.name} a été supprimé.")}
+     |> put_flash(:info, "Le Druide #{member.name} a été supprimé.")}
   end
 
   # ============================================================================
@@ -265,25 +265,32 @@ defmodule HydromelWeb.CoopLive.Dashboard do
       <div class="space-y-8">
         <%!-- Header & Navigation Tabs --%>
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-amber-200/80 pb-6">
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-0.5 text-xs font-bold text-amber-900">
-                <.icon name="hero-shield-check-solid" class="size-3.5 text-amber-700" />
-                <span>Administration Merhzinsa</span>
-              </span>
-              <%= if @setting.sales_open do %>
-                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
-                  <span class="size-1.5 rounded-full bg-emerald-600"></span> Prévente ouverte
+          <div class="flex items-center gap-4">
+            <img
+              src={~p"/images/logo.png"}
+              alt="Logo Cercle des Druides Merhzinsa"
+              class="size-16 rounded-full bg-white p-1 shadow-sm ring-2 ring-amber-300 object-contain shrink-0"
+            />
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-0.5 text-xs font-bold text-amber-900">
+                  <.icon name="hero-shield-check-solid" class="size-3.5 text-amber-700" />
+                  <span>Administration Merhzinsa</span>
                 </span>
-              <% else %>
-                <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-800">
-                  <span class="size-1.5 rounded-full bg-red-600"></span> Prévente fermée
-                </span>
-              <% end %>
+                <%= if @setting.sales_open do %>
+                  <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
+                    <span class="size-1.5 rounded-full bg-emerald-600"></span> Brassin ouvert
+                  </span>
+                <% else %>
+                  <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-800">
+                    <span class="size-1.5 rounded-full bg-red-600"></span> Brassin fermé
+                  </span>
+                <% end %>
+              </div>
+              <h1 class="mt-2 text-2xl sm:text-3xl font-extrabold text-stone-900">
+                Suivi du brassin d'Hydromel
+              </h1>
             </div>
-            <h1 class="mt-2 text-2xl sm:text-3xl font-extrabold text-stone-900">
-              Suivi de la prévente d'Hydromel
-            </h1>
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
@@ -319,7 +326,7 @@ defmodule HydromelWeb.CoopLive.Dashboard do
                 ]}
               >
                 <.icon name="hero-trophy" class="size-4" />
-                <span>Parrainage & Leaderboard ({length(@leaderboard)})</span>
+                <span>Druides & Classement ({length(@leaderboard)})</span>
               </button>
 
               <button
@@ -431,13 +438,13 @@ defmodule HydromelWeb.CoopLive.Dashboard do
               <section class="lg:col-span-1 rounded-3xl border border-amber-200 bg-white p-6 shadow-sm space-y-5 h-fit">
                 <div class="border-b border-stone-100 pb-3">
                   <span class="text-xs font-bold uppercase tracking-wider text-amber-700">
-                    Nouveau code parrain
+                    Nouveau Code Druide
                   </span>
                   <h2 class="text-lg font-bold text-stone-900">
-                    Ajouter un membre Merhzinsa
+                    Ajouter un Druide Merhzinsa
                   </h2>
                   <p class="text-xs text-stone-500 mt-0.5">
-                    Chaque membre reçoit un code donnant -1€/bouteille à ses filleuls.
+                    Les Druides ont brassé l'hydromel : leur code offre leur 1ère bouteille 75cl + étiquette custom, puis donne -1€/bouteille à leurs proches.
                   </p>
                 </div>
 
@@ -451,7 +458,7 @@ defmodule HydromelWeb.CoopLive.Dashboard do
                   <.input
                     field={@member_form[:name]}
                     type="text"
-                    label="Prénom / Nom du membre *"
+                    label="Prénom / Nom du Druide *"
                     placeholder="Ex : Thomas"
                     required
                     class="w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2 text-sm text-stone-900"
@@ -460,7 +467,7 @@ defmodule HydromelWeb.CoopLive.Dashboard do
                   <.input
                     field={@member_form[:referral_code]}
                     type="text"
-                    label="Code de parrainage (optionnel, auto-généré si vide)"
+                    label="Code Druide (optionnel, auto-généré si vide)"
                     placeholder="Ex : MERHZINSA"
                     class="w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2 text-sm font-mono uppercase text-stone-900"
                   />
@@ -471,7 +478,7 @@ defmodule HydromelWeb.CoopLive.Dashboard do
                     class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-amber-700 px-4 py-2.5 text-sm font-bold text-white shadow-xs transition hover:bg-amber-800 cursor-pointer"
                   >
                     <.icon name="hero-user-plus" class="size-4" />
-                    <span>Créer le membre & son code</span>
+                    <span>Créer le Druide & son code</span>
                   </button>
                 </.form>
               </section>
@@ -481,10 +488,10 @@ defmodule HydromelWeb.CoopLive.Dashboard do
                 <div class="flex items-center justify-between border-b border-stone-100 pb-4">
                   <div>
                     <span class="text-xs font-bold uppercase tracking-wider text-amber-700">
-                      Compétition Coopérative
+                      Cercle des Brasseurs
                     </span>
                     <h2 class="text-xl font-bold text-stone-900">
-                      Leaderboard des Vendeurs d'Hydromel (en Litres)
+                      Classement des Druides (Litres partagés)
                     </h2>
                   </div>
                   <.icon name="hero-trophy-solid" class="size-8 text-amber-500" />
@@ -494,10 +501,10 @@ defmodule HydromelWeb.CoopLive.Dashboard do
                   <div class="rounded-2xl border border-dashed border-stone-300 py-12 text-center text-stone-500">
                     <.icon name="hero-users" class="mx-auto size-10 text-stone-400" />
                     <p class="mt-2 font-medium text-stone-700">
-                      Aucun membre enregistré pour le moment
+                      Aucun Druide enregistré pour le moment
                     </p>
                     <p class="text-xs">
-                      Ajoutez les membres de la coopérative à gauche pour générer leurs codes de parrainage.
+                      Ajoutez les Druides du brassin à gauche pour générer leurs codes.
                     </p>
                   </div>
                 <% else %>
@@ -506,11 +513,11 @@ defmodule HydromelWeb.CoopLive.Dashboard do
                       <thead class="border-b border-stone-200 text-xs uppercase tracking-wider text-stone-500">
                         <tr>
                           <th class="pb-3 pr-3">Rang</th>
-                          <th class="pb-3 px-3">Membre</th>
-                          <th class="pb-3 px-3">Code Parrain</th>
-                          <th class="pb-3 px-3">Bouteille offerte</th>
-                          <th class="pb-3 px-3">Litres vendus (filleuls)</th>
-                          <th class="pb-3 px-3">Bouteilles vendues</th>
+                          <th class="pb-3 px-3">Druide</th>
+                          <th class="pb-3 px-3">Code Druide</th>
+                          <th class="pb-3 px-3">Part du Druide</th>
+                          <th class="pb-3 px-3">Litres partagés (proches)</th>
+                          <th class="pb-3 px-3">Bouteilles partagées</th>
                           <th class="pb-3 px-3">Commandes</th>
                           <th class="pb-3 pl-3 text-right">Actions</th>
                         </tr>
@@ -843,7 +850,7 @@ defmodule HydromelWeb.CoopLive.Dashboard do
                   <thead class="border-b border-stone-200 text-xs uppercase tracking-wider text-stone-500">
                     <tr>
                       <th class="pb-3 pr-4">Réf / Date</th>
-                      <th class="pb-3 px-4">Acheteur & Parrain</th>
+                      <th class="pb-3 px-4">Participant & Druide</th>
                       <th class="pb-3 px-4">Bouteilles</th>
                       <th class="pb-3 px-4">Étiquette Custom</th>
                       <th class="pb-3 px-4">Montant & Mode</th>
@@ -882,7 +889,7 @@ defmodule HydromelWeb.CoopLive.Dashboard do
                           <span class="mt-1 inline-flex items-center gap-1 rounded-md bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-800">
                             <.icon name="hero-ticket-solid" class="size-3" />
                             <span>
-                              Parrain : {if(order.coop_member,
+                              Druide : {if(order.coop_member,
                                 do: order.coop_member.name,
                                 else: order.referral_code_used
                               )}
