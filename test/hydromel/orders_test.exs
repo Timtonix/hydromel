@@ -108,13 +108,13 @@ defmodule Hydromel.OrdersTest do
         assert email.subject =~ referred_order.reference
       end)
 
-      # Verify leaderboard ranking by liters
+      # Verify leaderboard ranking by liters sold (excluding Thomas's own free 75cl bottle)
       leaderboard = Orders.list_leaderboard()
       [first, second] = leaderboard
       assert first.member.id == thomas.id
       assert first.member_bottle_claimed? == true
-      assert first.total_liters == 2.25
-      assert first.total_bottles == 3
+      assert first.total_liters == 1.5
+      assert first.total_bottles == 2
 
       assert second.member.id == lea.id
       assert second.member_bottle_claimed? == false

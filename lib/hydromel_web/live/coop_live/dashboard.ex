@@ -101,6 +101,19 @@ defmodule HydromelWeb.CoopLive.Dashboard do
      |> refresh_dashboard()}
   end
 
+  @impl true
+  def handle_event("resend_email", %{"id" => id}, socket) do
+    order = Orders.get_order!(id)
+    :ok = Orders.resend_order_confirmation(order)
+
+    {:noreply,
+     put_flash(
+       socket,
+       :info,
+       "L'e-mail récapitulatif de la commande #{order.reference} a été renvoyé à #{order.email}."
+     )}
+  end
+
   # ============================================================================
   # Cooperative Members & Referral Codes Events
   # ============================================================================
@@ -496,8 +509,8 @@ defmodule HydromelWeb.CoopLive.Dashboard do
                           <th class="pb-3 px-3">Membre</th>
                           <th class="pb-3 px-3">Code Parrain</th>
                           <th class="pb-3 px-3">Bouteille offerte</th>
-                          <th class="pb-3 px-3">Litres totaux</th>
-                          <th class="pb-3 px-3">Bouteilles</th>
+                          <th class="pb-3 px-3">Litres vendus (filleuls)</th>
+                          <th class="pb-3 px-3">Bouteilles vendues</th>
                           <th class="pb-3 px-3">Commandes</th>
                           <th class="pb-3 pl-3 text-right">Actions</th>
                         </tr>
@@ -1012,6 +1025,17 @@ defmodule HydromelWeb.CoopLive.Dashboard do
                                   else: "À récupérer"
                                 )}
                               </span>
+                            </button>
+
+                            <button
+                              id={"resend-email-#{order.id}"}
+                              type="button"
+                              phx-click="resend_email"
+                              phx-value-id={order.id}
+                              class="rounded-lg p-1.5 text-stone-500 transition hover:bg-amber-100 hover:text-amber-800 cursor-pointer"
+                              title="Renvoyer l'e-mail récapitulatif"
+                            >
+                              <.icon name="hero-envelope" class="size-4" />
                             </button>
 
                             <button

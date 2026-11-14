@@ -233,15 +233,26 @@ defmodule Hydromel.Orders do
           revenue_cents: 0
         })
 
-      liters = Float.round(agg.qty_33cl * 0.33 + agg.qty_75cl * 0.75, 2)
-      bottles = agg.qty_33cl + agg.qty_75cl
+      member_claimed? = agg.orders_count > 0
+
+      # Exclude the member's own 1 free 75cl bottle from sold liters on the leaderboard
+      sold_qty_75cl =
+        if member_claimed? and agg.qty_75cl > 0 do
+          agg.qty_75cl - 1
+        else
+          agg.qty_75cl
+        end
+
+      sold_qty_33cl = agg.qty_33cl
+      liters = Float.round(sold_qty_33cl * 0.33 + sold_qty_75cl * 0.75, 2)
+      bottles = sold_qty_33cl + sold_qty_75cl
 
       %{
         member: member,
-        member_bottle_claimed?: agg.orders_count > 0,
+        member_bottle_claimed?: member_claimed?,
         orders_count: agg.orders_count,
-        qty_33cl: agg.qty_33cl,
-        qty_75cl: agg.qty_75cl,
+        qty_33cl: sold_qty_33cl,
+        qty_75cl: sold_qty_75cl,
         total_bottles: bottles,
         total_liters: liters,
         revenue_cents: agg.revenue_cents
@@ -309,12 +320,33 @@ defmodule Hydromel.Orders do
     case Repo.insert(changeset) do
       {:ok, order} ->
         order = Repo.preload(order, :coop_member)
-        _ = OrderNotifier.deliver_order_confirmation(order, setting)
+        deliver_order_confirmation_async(order, setting)
         broadcast({:order_created, order})
         {:ok, order}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:error, changeset}
+    end
+  end
+
+  @doc """
+  Re-sends the order confirmation email for an existing order (e.g. triggered
+  from the cooperative dashboard).
+  """
+  def resend_order_confirmation(%Order{} = order) do
+    setting = get_setting!()
+    deliver_order_confirmation_async(order, setting)
+    :ok
+  end
+
+  defp deliver_order_confirmation_async(%Order{} = order, %Setting{} = setting) do
+    if Application.get_env(:hydromel, Hydromel.Mailer)[:adapter] == Swoosh.Adapters.Test do
+      _ = OrderNotifier.deliver_order_confirmation(order, setting)
+      :ok
+    else
+      Task.Supervisor.start_child(Hydromel.TaskSupervisor, fn ->
+        OrderNotifier.deliver_order_confirmation(order, setting)
+      end)
     end
   end
 

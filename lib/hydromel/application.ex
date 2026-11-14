@@ -12,8 +12,7 @@ defmodule Hydromel.Application do
       Hydromel.Repo,
       {DNSCluster, query: Application.get_env(:hydromel, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Hydromel.PubSub},
-      # Start a worker by calling: Hydromel.Worker.start_link(arg)
-      # {Hydromel.Worker, arg},
+      {Task.Supervisor, name: Hydromel.TaskSupervisor},
       # Start to serve requests, typically the last entry
       HydromelWeb.Endpoint
     ]

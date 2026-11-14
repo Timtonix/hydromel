@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="meadLiquid" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="50%" stop-color="#d97706" />
+      <stop offset="100%" stop-color="#92400e" />
+    </linearGradient>
+    <linearGradient id="bottleGlass" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.9" />
+      <stop offset="50%" stop-color="#fde68a" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.9" />
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded Background Badge for Favicon -->
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="#451a03" />
+
+  <!-- Cork & Wax Top -->
+  <rect x="27" y="6" width="10" height="6" rx="2" fill="#d6b07a" />
+  <rect x="26" y="10" width="12" height="5" rx="2" fill="#b45309" />
+
+  <!-- Bottle Neck & Body Outline -->
+  <path
+    d="M27 14 L37 14 L37 22 C37 25 45 27 45 34 L45 53 C45 56 43 58 40 58 L24 58 C21 58 19 56 19 53 L19 34 C19 27 27 25 27 22 Z"
+    fill="url(#bottleGlass)"
+    stroke="#fbbf24"
+    stroke-width="1.8"
+  />
+
+  <!-- Golden Mead Liquid Inside -->
+  <path
+    d="M20.5 34 C20.5 29 26 27 28 24 L36 24 C38 27 43.5 29 43.5 34 L43.5 52.5 C43.5 54.8 42 56.2 39.5 56.2 L24.5 56.2 C22 56.2 20.5 54.8 20.5 52.5 Z"
+    fill="url(#meadLiquid)"
+  />
+
+  <!-- Parchment Label on the Bottle -->
+  <rect x="22.5" y="34" width="19" height="15" rx="2.5" fill="#fffbeb" stroke="#78350f" stroke-width="1.2" />
+
+  <!-- Honeycomb Hexagon on Label -->
+  <polygon
+    points="32,37.2 35.2,39 35.2,42.6 32,44.4 28.8,42.6 28.8,39"
+    fill="#f59e0b"
+    stroke="#92400e"
+    stroke-width="1"
+  />
+
+  <!-- Glass Highlight Reflection -->
+  <path d="M23 30 L23 52" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity="0.45" />
+</svg>

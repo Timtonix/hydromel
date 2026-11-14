@@ -28,9 +28,11 @@ defmodule HydromelWeb.Layouts do
       <header class="sticky top-0 z-30 border-b border-amber-200/70 bg-white/85 backdrop-blur-md">
         <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
           <.link navigate={~p"/"} class="group flex items-center gap-3">
-            <div class="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 text-white shadow-sm shadow-amber-600/20 transition-transform duration-200 group-hover:scale-105">
-              <.icon name="hero-sparkles-solid" class="size-5" />
-            </div>
+            <img
+              src={~p"/images/hydromel-bottle.svg"}
+              alt="Bouteille d'hydromel Merhzinsa"
+              class="size-10 rounded-xl shadow-sm shadow-amber-600/20 transition-transform duration-200 group-hover:scale-105"
+            />
             <div>
               <span class="block text-xs font-semibold uppercase tracking-widest text-amber-700">
                 Coopérative

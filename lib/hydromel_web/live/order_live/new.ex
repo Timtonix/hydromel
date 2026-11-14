@@ -258,18 +258,32 @@ defmodule HydromelWeb.OrderLive.New do
       <div class="space-y-8">
         <%!-- Hero Banner --%>
         <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-900 via-amber-800 to-yellow-700 p-6 sm:p-10 text-white shadow-xl shadow-amber-900/15">
-          <div class="relative z-10 max-w-2xl space-y-3">
-            <div class="inline-flex items-center gap-2 rounded-full bg-amber-400/20 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-amber-200 ring-1 ring-amber-300/30">
-              <.icon name="hero-sparkles-solid" class="size-3.5 text-amber-300" />
-              <span>Prévente Coopérative Merhzinsa</span>
+          <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+            <div class="max-w-2xl space-y-3">
+              <div class="inline-flex items-center gap-2 rounded-full bg-amber-400/20 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-amber-200 ring-1 ring-amber-300/30">
+                <img
+                  src={~p"/images/hydromel-bottle.svg"}
+                  alt=""
+                  class="size-4 rounded-sm"
+                />
+                <span>Prévente Coopérative Merhzinsa</span>
+              </div>
+              <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">
+                Réservez vos bouteilles d'hydromel
+              </h1>
+              <p class="text-sm sm:text-base text-amber-100/90 leading-relaxed">
+                Cuvée artisanale limitée à <strong>{@stats.target_liters} litres</strong>
+                ! Utilisez le code d'un membre de la coopérative pour obtenir <strong>-1€ par bouteille</strong>, et personnalisez votre étiquette avec votre propre photo et texte.
+              </p>
             </div>
-            <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">
-              Réservez vos bouteilles d'hydromel
-            </h1>
-            <p class="text-sm sm:text-base text-amber-100/90 leading-relaxed">
-              Cuvée artisanale limitée à <strong>{@stats.target_liters} litres</strong>
-              ! Utilisez le code d'un membre de la coopérative pour obtenir <strong>-1€ par bouteille</strong>, et personnalisez votre étiquette avec votre propre photo et texte.
-            </p>
+
+            <div class="hidden sm:flex shrink-0 items-center justify-center">
+              <img
+                src={~p"/images/hydromel-bottle.svg"}
+                alt="Bouteille d'hydromel"
+                class="size-24 drop-shadow-lg transition-transform duration-300 hover:rotate-3 hover:scale-105"
+              />
+            </div>
           </div>
         </section>
 
