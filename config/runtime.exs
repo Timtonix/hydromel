@@ -77,9 +77,15 @@ if config_env() == :prod do
         relay: smtp_host,
         port: smtp_port,
         tls: :if_available,
+        tls_options: [versions: [:"tlsv1.2", :"tlsv1.3"], verify: :verify_none],
         auth: Keyword.get(auth_opts, :auth),
         username: Keyword.get(auth_opts, :username),
         password: Keyword.get(auth_opts, :password)
+
+    resend_key = System.get_env("RESEND_API_KEY") ->
+      config :hydromel, Hydromel.Mailer,
+        adapter: Swoosh.Adapters.Resend,
+        api_key: resend_key
 
     brevo_key = System.get_env("BREVO_API_KEY") ->
       config :hydromel, Hydromel.Mailer,
