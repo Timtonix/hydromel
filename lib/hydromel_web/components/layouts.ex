@@ -29,9 +29,9 @@ defmodule HydromelWeb.Layouts do
         <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
           <.link navigate={~p"/"} class="group flex items-center gap-3">
             <img
-              src={~p"/images/hydromel-bottle.svg"}
-              alt="Bouteille d'hydromel Merhzinsa"
-              class="size-10 rounded-xl shadow-sm shadow-amber-600/20 transition-transform duration-200 group-hover:scale-105"
+              src={~p"/images/logo.png"}
+              alt="Logo Coopérative Merhzinsa"
+              class="size-10 rounded-xl object-contain transition-transform duration-200 group-hover:scale-105"
             />
             <div>
               <span class="block text-xs font-semibold uppercase tracking-widest text-amber-700">

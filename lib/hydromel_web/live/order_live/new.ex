@@ -262,9 +262,9 @@ defmodule HydromelWeb.OrderLive.New do
             <div class="max-w-2xl space-y-3">
               <div class="inline-flex items-center gap-2 rounded-full bg-amber-400/20 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-amber-200 ring-1 ring-amber-300/30">
                 <img
-                  src={~p"/images/hydromel-bottle.svg"}
+                  src={~p"/images/logo.png"}
                   alt=""
-                  class="size-4 rounded-sm"
+                  class="size-4 rounded-sm object-contain"
                 />
                 <span>Prévente Coopérative Merhzinsa</span>
               </div>
@@ -279,9 +279,9 @@ defmodule HydromelWeb.OrderLive.New do
 
             <div class="hidden sm:flex shrink-0 items-center justify-center">
               <img
-                src={~p"/images/hydromel-bottle.svg"}
-                alt="Bouteille d'hydromel"
-                class="size-24 drop-shadow-lg transition-transform duration-300 hover:rotate-3 hover:scale-105"
+                src={~p"/images/logo.png"}
+                alt="Logo Merhzinsa"
+                class="size-24 object-contain drop-shadow-lg transition-transform duration-300 hover:rotate-3 hover:scale-105"
               />
             </div>
           </div>

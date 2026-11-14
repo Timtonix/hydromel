@@ -25,9 +25,11 @@ defmodule HydromelWeb.CoopLive.Login do
       <div class="mx-auto max-w-md py-8">
         <div class="rounded-3xl border border-amber-200 bg-white p-8 shadow-lg shadow-amber-950/5 space-y-6">
           <div class="text-center space-y-2">
-            <div class="mx-auto flex size-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-800">
-              <.icon name="hero-lock-closed-solid" class="size-6" />
-            </div>
+            <img
+              src={~p"/images/logo.png"}
+              alt="Logo Merhzinsa"
+              class="mx-auto size-16 object-contain"
+            />
             <h1 class="text-2xl font-extrabold text-stone-900">
               Espace Coopérative Merhzinsa
             </h1>
