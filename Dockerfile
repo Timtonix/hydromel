@@ -17,12 +17,8 @@
 #
 # For finding packages in Debian, search on https://packages.debian.org/.
 
-ARG ELIXIR_VERSION=1.20.5
-ARG OTP_VERSION=29.1.2
-ARG DEBIAN_VERSION=trixie-20261104-slim
-
-ARG BUILDER_IMAGE="docker.io/hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
-ARG RUNNER_IMAGE="docker.io/debian:${DEBIAN_VERSION}"
+ARG BUILDER_IMAGE="docker.io/elixir:1.18-slim"
+ARG RUNNER_IMAGE="docker.io/debian:bookworm-slim"
 
 FROM ${BUILDER_IMAGE} AS builder
 
@@ -89,7 +85,7 @@ ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
 WORKDIR "/app"
-RUN chown nobody /app
+RUN mkdir -p /app/uploads/labels && chown -R nobody:root /app && chmod -R 777 /app/uploads
 
 # set runner ENV
 ENV MIX_ENV="prod"

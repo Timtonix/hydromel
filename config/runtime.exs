@@ -7,7 +7,8 @@ end
 config :hydromel,
   coop_password: System.get_env("COOP_PASSWORD") || "merhzinsa",
   mailer_from_email: System.get_env("MAILER_FROM_EMAIL") || "contact@merhzinsa.coop",
-  mailer_from_name: System.get_env("MAILER_FROM_NAME") || "Coopérative Merhzinsa"
+  mailer_from_name: System.get_env("MAILER_FROM_NAME") || "Coopérative Merhzinsa",
+  uploads_dir: System.get_env("UPLOADS_DIR")
 
 config :hydromel, HydromelWeb.Endpoint,
   http: [port: String.to_integer(System.get_env("PORT", "4000"))]

@@ -213,7 +213,7 @@ defmodule HydromelWeb.CoreComponents do
 
     ~H"""
     <div class="fieldset mb-2">
-      <label for={@id}>
+      <label for={@id} class="cursor-pointer">
         <input
           type="hidden"
           name={@name}
@@ -221,16 +221,17 @@ defmodule HydromelWeb.CoreComponents do
           disabled={@rest[:disabled]}
           form={@rest[:form]}
         />
-        <span class="label">
+        <span class="flex items-start gap-3 text-sm font-medium text-stone-800 whitespace-normal leading-snug">
           <input
             type="checkbox"
             id={@id}
             name={@name}
             value="true"
             checked={@checked}
-            class={@class || "checkbox checkbox-sm"}
+            class={@class || "mt-0.5 size-4 shrink-0 rounded border-stone-300 accent-amber-600"}
             {@rest}
-          />{@label}
+          />
+          <span class="flex-1 whitespace-normal break-words">{@label}</span>
         </span>
       </label>
       <.error :for={msg <- @errors}>{msg}</.error>

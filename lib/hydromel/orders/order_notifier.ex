@@ -89,6 +89,25 @@ defmodule Hydromel.Orders.OrderNotifier do
         ""
       end
 
+    line_discount =
+      if (order.discount_cents || 0) > 0 do
+        "- Remise parrainage (#{order.referral_code_used}) : -#{format_euros(order.discount_cents)}\n"
+      else
+        ""
+      end
+
+    line_label =
+      if order.custom_label do
+        fee_str =
+          if (order.custom_label_fee_cents || 0) > 0,
+            do: "+#{format_euros(order.custom_label_fee_cents)}",
+            else: "Offerte (0,00 €)"
+
+        "- Option étiquette personnalisée : #{fee_str}\n  Texte de l'étiquette : #{order.custom_label_text}\n"
+      else
+        ""
+      end
+
     comment_block =
       if is_binary(order.pickup_comment) and String.trim(order.pickup_comment) != "" do
         "\nModalités de récupération indiquées :\n#{order.pickup_comment}\n"
@@ -104,7 +123,7 @@ defmodule Hydromel.Orders.OrderNotifier do
 
     Référence de commande : #{order.reference}
     --------------------------------------------------
-    #{lines_33}#{lines_75}--------------------------------------------------
+    #{lines_33}#{lines_75}#{line_discount}#{line_label}--------------------------------------------------
     TOTAL À RÉGLER : #{format_euros(order.total_cents)}
 
     Moyen de paiement choisi : #{payment_method_label(order.payment_method)}
@@ -146,6 +165,48 @@ defmodule Hydromel.Orders.OrderNotifier do
           <td style="padding: 10px 0; border-bottom: 1px solid #fde68a; text-align: right; font-weight: 600;">#{format_euros(subtotal)}</td>
         </tr>
         """
+      else
+        ""
+      end
+
+    row_discount =
+      if (order.discount_cents || 0) > 0 do
+        code =
+          Phoenix.HTML.html_escape(order.referral_code_used || "")
+          |> Phoenix.HTML.safe_to_string()
+
+        """
+        <tr>
+          <td colspan="3" style="padding: 10px 0; border-bottom: 1px solid #fde68a; color: #047857;">Remise parrainage (#{code})</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #fde68a; text-align: right; font-weight: 600; color: #047857;">-#{format_euros(order.discount_cents)}</td>
+        </tr>
+        """
+      else
+        ""
+      end
+
+    row_label =
+      if order.custom_label do
+        escaped_text =
+          Phoenix.HTML.html_escape(order.custom_label_text || "")
+          |> Phoenix.HTML.safe_to_string()
+
+        fee_label =
+          if (order.custom_label_fee_cents || 0) > 0,
+            do: "+#{format_euros(order.custom_label_fee_cents)}",
+            else: "Offerte (0,00 €)"
+
+        """
+        <tr>
+          <td colspan="3" style="padding: 10px 0; border-bottom: 1px solid #fde68a;">
+            Option étiquette personnalisée<br/>
+            <small style="color: #78350f;">Texte : « #{escaped_text} »</small>
+          </td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #fde68a; text-align: right; font-weight: 600;">#{fee_label}</td>
+        </tr>
+        """
+      else
+        ""
       end
 
     paypal_button =
@@ -216,6 +277,8 @@ defmodule Hydromel.Orders.OrderNotifier do
             <tbody>
               #{row_33}
               #{row_75}
+              #{row_discount}
+              #{row_label}
             </tbody>
             <tfoot>
               <tr>

@@ -22,6 +22,7 @@ defmodule HydromelWeb.Router do
     pipe_through :browser
 
     get "/up", PageController, :health
+    get "/sample-label", PageController, :sample_label
 
     live "/", OrderLive.New, :new
     live "/coop/login", CoopLive.Login, :login
@@ -37,6 +38,7 @@ defmodule HydromelWeb.Router do
     pipe_through [:browser, :require_coop_auth]
 
     get "/export.csv", CoopSessionController, :export_csv
+    get "/orders/:id/label-image", CoopSessionController, :download_label_image
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

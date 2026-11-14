@@ -1,18 +1,23 @@
 defmodule Hydromel.Orders.Setting do
   @moduledoc """
   Schema representing the cooperative's configurable pre-sale parameters:
-  prices, available stock limits, payment instructions (Cash, Wero, PayPal),
-  and whether the pre-sale is currently open.
+  prices, total target liters (35L), available stock limits, custom label &
+  referral pricing, sample label image, payment instructions, and whether the
+  pre-sale is currently open.
   """
   use Ecto.Schema
   import Ecto.Changeset
 
   schema "coop_settings" do
     field :key, :string, default: "default"
-    field :price_33cl_cents, :integer, default: 450
-    field :price_75cl_cents, :integer, default: 900
+    field :price_33cl_cents, :integer, default: 350
+    field :price_75cl_cents, :integer, default: 600
     field :stock_33cl, :integer
     field :stock_75cl, :integer
+    field :target_liters, :float, default: 35.0
+    field :referral_discount_cents, :integer, default: 100
+    field :custom_label_price_cents, :integer, default: 100
+    field :sample_label_filename, :string
     field :sales_open, :boolean, default: true
 
     field :closed_message, :string,
@@ -53,6 +58,10 @@ defmodule Hydromel.Orders.Setting do
       :price_75cl_euros,
       :stock_33cl,
       :stock_75cl,
+      :target_liters,
+      :referral_discount_cents,
+      :custom_label_price_cents,
+      :sample_label_filename,
       :sales_open,
       :closed_message,
       :wero_instructions,
@@ -63,9 +72,10 @@ defmodule Hydromel.Orders.Setting do
     ])
     |> maybe_convert_euros_to_cents(:price_33cl_euros, :price_33cl_cents)
     |> maybe_convert_euros_to_cents(:price_75cl_euros, :price_75cl_cents)
-    |> validate_required([:price_33cl_cents, :price_75cl_cents, :sales_open])
+    |> validate_required([:price_33cl_cents, :price_75cl_cents, :target_liters, :sales_open])
     |> validate_number(:price_33cl_cents, greater_than_or_equal_to: 0)
     |> validate_number(:price_75cl_cents, greater_than_or_equal_to: 0)
+    |> validate_number(:target_liters, greater_than: 0.0)
     |> validate_number(:stock_33cl, greater_than_or_equal_to: 0)
     |> validate_number(:stock_75cl, greater_than_or_equal_to: 0)
     |> unique_constraint(:key)
@@ -87,13 +97,13 @@ defmodule Hydromel.Orders.Setting do
             put_change(changeset, cents_field, round(float_val * 100))
 
           _ ->
-            add_error(changeset, euro_field, "format de prix invalide (ex: 4.50)")
+            add_error(changeset, euro_field, "format de prix invalide (ex: 6.00)")
         end
     end
   end
 
   @doc """
-  Formats cents as a French euro string for input fields (e.g. `450` -> `"4.50"`).
+  Formats cents as a euro string for input fields (e.g. `600` -> `"6.00"`).
   """
   def format_cents_input(cents) when is_integer(cents) do
     :erlang.float_to_binary(cents / 100, decimals: 2)

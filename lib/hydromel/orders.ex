@@ -1,17 +1,19 @@
 defmodule Hydromel.Orders do
   @moduledoc """
   The Orders context manages mead bottle reservations (`Order`), cooperative
-  settings (`Setting`), real-time PubSub broadcasts, statistics, and CSV exports.
+  members & referral codes (`CoopMember`), cooperative settings (`Setting`),
+  uploaded custom label images on disk, real-time PubSub broadcasts,
+  leaderboard rankings, statistics, and CSV exports.
   """
 
   import Ecto.Query, warn: false
   alias Hydromel.Repo
-  alias Hydromel.Orders.{Order, OrderNotifier, Setting}
+  alias Hydromel.Orders.{CoopMember, Order, OrderNotifier, Setting}
 
   @pubsub_topic "orders"
 
   @doc """
-  Subscribes the caller process to real-time order and setting updates.
+  Subscribes the caller process to real-time order, member, and setting updates.
   """
   def subscribe do
     Phoenix.PubSub.subscribe(Hydromel.PubSub, @pubsub_topic)
@@ -19,6 +21,67 @@ defmodule Hydromel.Orders do
 
   defp broadcast(message) do
     Phoenix.PubSub.broadcast(Hydromel.PubSub, @pubsub_topic, message)
+  end
+
+  # ============================================================================
+  # Uploads Directory (Dokploy Volume Compatible)
+  # ============================================================================
+
+  @doc """
+  Returns the base directory where uploaded label images are stored on disk.
+  In production on Dokploy, mount a volume at `/app/uploads` (configured via
+  `UPLOADS_DIR`).
+  """
+  def uploads_dir do
+    Application.get_env(:hydromel, :uploads_dir) ||
+      Path.join(:code.priv_dir(:hydromel), "uploads")
+  end
+
+  def labels_dir do
+    dir = Path.join(uploads_dir(), "labels")
+    File.mkdir_p!(dir)
+    dir
+  end
+
+  @doc """
+  Copies a temporary uploaded file into the persistent `labels/` directory and
+  returns metadata map `%{filename, original_name, content_type}`.
+  """
+  def store_label_file(source_path, original_name, content_type) do
+    ext = Path.extname(original_name || ".png") |> String.downcase()
+    safe_ext = if ext in [".jpg", ".jpeg", ".png", ".webp", ".gif"], do: ext, else: ".png"
+    unique_name = "label-#{System.unique_integer([:positive, :monotonic])}#{safe_ext}"
+    dest_path = Path.join(labels_dir(), unique_name)
+
+    File.cp!(source_path, dest_path)
+
+    %{
+      filename: unique_name,
+      original_name: original_name || unique_name,
+      content_type: content_type || "image/png"
+    }
+  end
+
+  @doc """
+  Stores a custom sample label image uploaded by the cooperative admin.
+  """
+  def store_sample_label_file(source_path, original_name) do
+    ext = Path.extname(original_name || ".png") |> String.downcase()
+    safe_ext = if ext in [".jpg", ".jpeg", ".png", ".webp", ".svg"], do: ext, else: ".png"
+    unique_name = "sample-etiquette-#{System.unique_integer([:positive, :monotonic])}#{safe_ext}"
+    dest_path = Path.join(labels_dir(), unique_name)
+
+    File.cp!(source_path, dest_path)
+    unique_name
+  end
+
+  @doc """
+  Returns the absolute path on disk for a stored label filename, ensuring no path
+  traversal.
+  """
+  def label_file_path(filename) when is_binary(filename) do
+    safe_base = Path.basename(filename)
+    Path.join(labels_dir(), safe_base)
   end
 
   # ============================================================================
@@ -75,32 +138,177 @@ defmodule Hydromel.Orders do
   end
 
   # ============================================================================
+  # Cooperative Members & Leaderboard
+  # ============================================================================
+
+  @doc """
+  Lists all cooperative members ordered alphabetically by name.
+  """
+  def list_coop_members do
+    Repo.all(from m in CoopMember, order_by: [asc: m.name])
+  end
+
+  @doc """
+  Gets a single cooperative member by ID.
+  """
+  def get_coop_member!(id), do: Repo.get!(CoopMember, id)
+
+  @doc """
+  Finds a cooperative member by their referral code (case-insensitive).
+  """
+  def get_coop_member_by_code(nil), do: nil
+  def get_coop_member_by_code(""), do: nil
+
+  def get_coop_member_by_code(code) when is_binary(code) do
+    normalized = CoopMember.sanitize_code(code)
+
+    if normalized == "" do
+      nil
+    else
+      Repo.get_by(CoopMember, referral_code: normalized)
+    end
+  end
+
+  @doc """
+  Returns a changeset for creating/editing a cooperative member.
+  """
+  def change_coop_member(%CoopMember{} = member, attrs \\ %{}) do
+    CoopMember.changeset(member, attrs)
+  end
+
+  @doc """
+  Creates a new cooperative member with a unique referral code.
+  """
+  def create_coop_member(attrs) do
+    case %CoopMember{} |> CoopMember.changeset(attrs) |> Repo.insert() do
+      {:ok, member} ->
+        broadcast({:members_updated, member})
+        {:ok, member}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  @doc """
+  Deletes a cooperative member.
+  """
+  def delete_coop_member(%CoopMember{} = member) do
+    {:ok, deleted} = Repo.delete(member)
+    broadcast({:members_updated, deleted})
+    {:ok, deleted}
+  end
+
+  @doc """
+  Computes the cooperative referral leaderboard sorted by total liters sold
+  descending.
+  """
+  def list_leaderboard do
+    members = list_coop_members()
+
+    active_orders_by_member =
+      Repo.all(
+        from o in Order,
+          where: o.pickup_status != "cancelled" and not is_nil(o.coop_member_id),
+          group_by: o.coop_member_id,
+          select: {
+            o.coop_member_id,
+            %{
+              orders_count: count(o.id),
+              qty_33cl: coalesce(sum(o.qty_33cl), 0),
+              qty_75cl: coalesce(sum(o.qty_75cl), 0),
+              revenue_cents: coalesce(sum(o.total_cents), 0)
+            }
+          }
+      )
+      |> Map.new()
+
+    members
+    |> Enum.map(fn member ->
+      agg =
+        Map.get(active_orders_by_member, member.id, %{
+          orders_count: 0,
+          qty_33cl: 0,
+          qty_75cl: 0,
+          revenue_cents: 0
+        })
+
+      liters = Float.round(agg.qty_33cl * 0.33 + agg.qty_75cl * 0.75, 2)
+      bottles = agg.qty_33cl + agg.qty_75cl
+
+      %{
+        member: member,
+        member_bottle_claimed?: agg.orders_count > 0,
+        orders_count: agg.orders_count,
+        qty_33cl: agg.qty_33cl,
+        qty_75cl: agg.qty_75cl,
+        total_bottles: bottles,
+        total_liters: liters,
+        revenue_cents: agg.revenue_cents
+      }
+    end)
+    |> Enum.sort_by(fn entry ->
+      {-entry.total_liters, -entry.total_bottles, entry.member.name}
+    end)
+  end
+
+  # ============================================================================
   # Orders
   # ============================================================================
 
   @doc """
-  Returns an `%Ecto.Changeset{}` for tracking public order changes.
+  Returns `true` if no active (non-cancelled) order has yet used this cooperative
+  member's referral code, meaning the member's own 1 free 75cl bottle (+ free
+  custom label) is still available.
   """
-  def change_order(%Order{} = order, attrs \\ %{}, setting \\ nil) do
-    setting = setting || get_setting!()
-    Order.changeset(order, attrs, setting)
+  def member_free_bottle_available?(nil), do: false
+
+  def member_free_bottle_available?(%CoopMember{id: member_id}) do
+    not Repo.exists?(
+      from o in Order,
+        where: o.coop_member_id == ^member_id and o.pickup_status != "cancelled"
+    )
   end
 
   @doc """
-  Creates a new order after validating sales status and remaining bottle stock,
-  delivers the summary email via `OrderNotifier`, and broadcasts the creation.
+  Returns an `%Ecto.Changeset{}` for tracking public order changes, resolving
+  any referral code automatically.
   """
-  def create_order(attrs) do
+  def change_order(%Order{} = order, attrs \\ %{}, setting \\ nil) do
+    setting = setting || get_setting!()
+
+    raw_code =
+      Map.get(attrs, "referral_code_used") || Map.get(attrs, :referral_code_used) ||
+        order.referral_code_used
+
+    coop_member = get_coop_member_by_code(raw_code)
+    free_member_bottle? = member_free_bottle_available?(coop_member)
+
+    Order.changeset(order, attrs, setting, coop_member, free_member_bottle?)
+  end
+
+  @doc """
+  Creates a new order after validating sales status, total liters remaining,
+  bottle stock, and custom label fields. Delivers the summary email via
+  `OrderNotifier` and broadcasts the creation.
+  """
+  def create_order(attrs, label_upload \\ nil) do
     setting = get_setting!()
+    raw_code = Map.get(attrs, "referral_code_used") || Map.get(attrs, :referral_code_used)
+    coop_member = get_coop_member_by_code(raw_code)
+    free_member_bottle? = member_free_bottle_available?(coop_member)
 
     changeset =
       %Order{}
-      |> Order.changeset(attrs, setting)
+      |> Order.changeset(attrs, setting, coop_member, free_member_bottle?)
+      |> Order.put_label_upload(label_upload)
+      |> Order.validate_custom_label_submission()
       |> validate_sales_open(setting)
       |> validate_stock_availability(setting)
 
     case Repo.insert(changeset) do
       {:ok, order} ->
+        order = Repo.preload(order, :coop_member)
         _ = OrderNotifier.deliver_order_confirmation(order, setting)
         broadcast({:order_created, order})
         {:ok, order}
@@ -129,6 +337,7 @@ defmodule Hydromel.Orders do
       changeset
       |> check_format_stock(:qty_33cl, req_33, setting.stock_33cl, reserved.qty_33cl, "33cl")
       |> check_format_stock(:qty_75cl, req_75, setting.stock_75cl, reserved.qty_75cl, "75cl")
+      |> check_total_liters(req_33, req_75, setting.target_liters, reserved)
     else
       changeset
     end
@@ -151,14 +360,34 @@ defmodule Hydromel.Orders do
     end
   end
 
+  defp check_total_liters(changeset, _req_33, _req_75, nil, _reserved), do: changeset
+
+  defp check_total_liters(changeset, req_33, req_75, target_liters, reserved) do
+    current_liters = reserved.qty_33cl * 0.33 + reserved.qty_75cl * 0.75
+    requested_liters = req_33 * 0.33 + req_75 * 0.75
+    remaining_liters = Float.round(max(target_liters - current_liters, 0.0), 2)
+
+    if current_liters + requested_liters > target_liters + 0.001 do
+      Ecto.Changeset.add_error(
+        changeset,
+        :qty_75cl,
+        "Volume disponible dépassé : il ne reste que #{remaining_liters} L sur la cuvée de #{target_liters} L"
+      )
+    else
+      changeset
+    end
+  end
+
   @doc """
-  Lists orders ordered by newest first, with optional search and status filters.
+  Lists orders ordered by newest first, preloading `:coop_member`, with optional
+  search and status filters.
   """
   def list_orders(filters \\ %{}) do
     Order
     |> apply_search_filter(Map.get(filters, :search) || Map.get(filters, "search"))
     |> apply_status_filter(Map.get(filters, :filter) || Map.get(filters, "filter"))
     |> order_by([o], desc: o.inserted_at, desc: o.id)
+    |> preload(:coop_member)
     |> Repo.all()
   end
 
@@ -174,7 +403,9 @@ defmodule Hydromel.Orders do
           ilike(o.last_name, ^term) or
           ilike(o.email, ^term) or
           ilike(o.reference, ^term) or
-          ilike(o.pickup_comment, ^term)
+          ilike(o.pickup_comment, ^term) or
+          ilike(o.referral_code_used, ^term) or
+          ilike(o.custom_label_text, ^term)
   end
 
   defp apply_status_filter(query, "unpaid") do
@@ -193,6 +424,10 @@ defmodule Hydromel.Orders do
     from o in query, where: o.pickup_status == "picked_up"
   end
 
+  defp apply_status_filter(query, "custom_label") do
+    from o in query, where: o.custom_label == true and o.pickup_status != "cancelled"
+  end
+
   defp apply_status_filter(query, "cancelled") do
     from o in query, where: o.pickup_status == "cancelled"
   end
@@ -200,15 +435,21 @@ defmodule Hydromel.Orders do
   defp apply_status_filter(query, _all), do: query
 
   @doc """
-  Gets a single order by ID. Raises `Ecto.NoResultsError` if not found.
+  Gets a single order by ID with `:coop_member` preloaded.
   """
-  def get_order!(id), do: Repo.get!(Order, id)
+  def get_order!(id) do
+    Order
+    |> preload(:coop_member)
+    |> Repo.get!(id)
+  end
 
   @doc """
   Gets a single order by reference.
   """
   def get_order_by_reference(reference) when is_binary(reference) do
-    Repo.get_by(Order, reference: String.trim(reference) |> String.upcase())
+    Order
+    |> preload(:coop_member)
+    |> Repo.get_by(reference: String.trim(reference) |> String.upcase())
   end
 
   @doc """
@@ -247,6 +488,7 @@ defmodule Hydromel.Orders do
   def update_order_admin(%Order{} = order, attrs) do
     case order |> Order.admin_changeset(attrs) |> Repo.update() do
       {:ok, updated} ->
+        updated = Repo.preload(updated, :coop_member)
         broadcast({:order_updated, updated})
         {:ok, updated}
 
@@ -276,7 +518,7 @@ defmodule Hydromel.Orders do
 
   @doc """
   Computes comprehensive pre-sale statistics for the cooperative dashboard and
-  public stock indicators.
+  the public 35L progress bar.
   """
   def get_stats(setting \\ nil) do
     setting = setting || get_setting!()
@@ -324,6 +566,16 @@ defmodule Hydromel.Orders do
     total_liters =
       Float.round(active_stats.qty_33cl * 0.33 + active_stats.qty_75cl * 0.75, 2)
 
+    target_liters = setting.target_liters || 35.0
+    remaining_liters = Float.round(max(target_liters - total_liters, 0.0), 2)
+
+    progress_percent =
+      if target_liters > 0 do
+        min(round(total_liters / target_liters * 100), 100)
+      else
+        0
+      end
+
     %{
       active_orders_count: active_stats.active_orders_count,
       picked_up_count: picked_up_count,
@@ -332,6 +584,9 @@ defmodule Hydromel.Orders do
       remaining_33cl: remaining_33cl,
       remaining_75cl: remaining_75cl,
       total_liters: total_liters,
+      target_liters: target_liters,
+      remaining_liters: remaining_liters,
+      progress_percent: progress_percent,
       expected_cents: active_stats.expected_cents,
       paid_cents: paid_cents
     }
@@ -355,6 +610,10 @@ defmodule Hydromel.Orders do
       "Email",
       "Bouteilles 33cl",
       "Bouteilles 75cl",
+      "Code Parrain",
+      "Membre Parrain",
+      "Étiquette Custom",
+      "Texte Étiquette",
       "Total (€)",
       "Moyen de paiement",
       "Statut paiement",
@@ -372,6 +631,10 @@ defmodule Hydromel.Orders do
           o.email,
           Integer.to_string(o.qty_33cl),
           Integer.to_string(o.qty_75cl),
+          o.referral_code_used || "",
+          (o.coop_member && o.coop_member.name) || "",
+          if(o.custom_label, do: "Oui", else: "Non"),
+          o.custom_label_text || "",
           :erlang.float_to_binary(o.total_cents / 100, decimals: 2),
           OrderNotifier.payment_method_label(o.payment_method),
           if(o.payment_status == "paid", do: "Payé", else: "En attente"),

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 280" width="420" height="280">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fffbeb" />
+      <stop offset="100%" stop-color="#fef3c7" />
+    </linearGradient>
+    <linearGradient id="goldBorder" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#b45309" />
+      <stop offset="50%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#92400e" />
+    </linearGradient>
+  </defs>
+
+  <!-- Outer Parchment Label -->
+  <rect x="10" y="10" width="400" height="260" rx="18" fill="url(#bgGrad)" stroke="url(#goldBorder)" stroke-width="5" />
+  <rect x="20" y="20" width="380" height="240" rx="12" fill="none" stroke="#d97706" stroke-width="1.5" stroke-dasharray="5,4" />
+
+  <!-- Top Header -->
+  <text x="210" y="48" text-anchor="middle" font-family="Georgia, serif" font-size="11" font-weight="bold" letter-spacing="3" fill="#92400e">
+    COOPÉRATIVE MERHZINSA
+  </text>
+  <text x="210" y="74" text-anchor="middle" font-family="Georgia, serif" font-size="22" font-weight="bold" fill="#451a03">
+    CUVÉE SPÉCIALE HYDROMEL
+  </text>
+
+  <!-- Custom Photo Placeholder Frame -->
+  <rect x="44" y="92" width="130" height="125" rx="10" fill="#fde68a" stroke="#b45309" stroke-width="2" />
+  <circle cx="84" cy="132" r="14" fill="#f59e0b" opacity="0.7" />
+  <path d="M 52 205 L 92 158 L 122 186 L 144 166 L 166 205 Z" fill="#d97706" opacity="0.55" />
+  <text x="109" y="155" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#78350f">
+    VOTRE PHOTO
+  </text>
+
+  <!-- Custom Text Area -->
+  <rect x="190" y="92" width="190" height="125" rx="10" fill="#ffffff" fill-opacity="0.75" stroke="#fcd34d" stroke-width="1.5" />
+  <text x="285" y="122" text-anchor="middle" font-family="Georgia, serif" font-size="12" font-style="italic" fill="#92400e">
+    Votre message personnalisé :
+  </text>
+  <text x="285" y="152" text-anchor="middle" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#1c1917">
+    « Cuvée d'anniversaire
+  </text>
+  <text x="285" y="174" text-anchor="middle" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#1c1917">
+    de la guilde ! 🍯 »
+  </text>
+  <text x="285" y="202" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#78350f">
+    Mis en bouteille par Merhzinsa
+  </text>
+
+  <!-- Footer -->
+  <text x="210" y="244" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="bold" letter-spacing="1.5" fill="#92400e">
+    ARTISANAL • MIEL &amp; EAU • ÉTIQUETTE PERSONNALISÉE
+  </text>
+</svg>
