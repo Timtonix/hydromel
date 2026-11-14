@@ -20,6 +20,10 @@ defmodule HydromelWeb.Layouts do
     default: false,
     doc: "whether to use a wider container (e.g. for the cooperative dashboard)"
 
+  attr :hide_reserve_link, :boolean,
+    default: false,
+    doc: "whether to hide the 'Réserver' link in the header (e.g. when already on the home page)"
+
   slot :inner_block, required: true
 
   def app(assigns) do
@@ -46,13 +50,15 @@ defmodule HydromelWeb.Layouts do
           </.link>
 
           <nav class="flex items-center gap-2 sm:gap-3">
-            <.link
-              navigate={~p"/"}
-              class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-amber-100/60 hover:text-amber-900"
-            >
-              <.icon name="hero-shopping-bag" class="size-4 text-amber-700" />
-              <span>Réserver</span>
-            </.link>
+            <%= unless @hide_reserve_link do %>
+              <.link
+                navigate={~p"/"}
+                class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-amber-100/60 hover:text-amber-900"
+              >
+                <.icon name="hero-shopping-bag" class="size-4 text-amber-700" />
+                <span>Réserver</span>
+              </.link>
+            <% end %>
 
             <.link
               navigate={~p"/coop"}

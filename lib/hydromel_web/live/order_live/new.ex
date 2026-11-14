@@ -271,7 +271,7 @@ defmodule HydromelWeb.OrderLive.New do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash}>
+    <Layouts.app flash={@flash} hide_reserve_link={true}>
       <div class="space-y-8">
         <%!-- Hero Banner --%>
         <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-900 via-amber-800 to-yellow-700 p-6 sm:p-10 text-white shadow-xl shadow-amber-900/15">
