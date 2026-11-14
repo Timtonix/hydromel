@@ -110,9 +110,9 @@ defmodule Hydromel.Orders.OrderNotifier do
 
     comment_block =
       if is_binary(order.pickup_comment) and String.trim(order.pickup_comment) != "" do
-        "\nModalités de récupération indiquées :\n#{order.pickup_comment}\n"
+        "\nDisponibilité prévue : FÉVRIER (la cuvée est en cours d'affinage, nous vous préviendrons dès la mise en bouteille).\nModalités de récupération indiquées :\n#{order.pickup_comment}\n"
       else
-        "\nModalités de récupération : Aucun commentaire particulier précisé.\n"
+        "\nDisponibilité prévue : FÉVRIER (la cuvée est en cours d'affinage, nous vous préviendrons dès la mise en bouteille).\nModalités de récupération : Aucun commentaire particulier précisé.\n"
       end
 
     """
@@ -298,9 +298,12 @@ defmodule Hydromel.Orders.OrderNotifier do
             #{paypal_button}
           </div>
 
-          <div style="margin-top: 20px; padding: 14px; background-color: #fffbeb; border-radius: 8px; font-size: 14px;">
-            <strong style="color: #78350f; display: block; margin-bottom: 4px;">Récupération de la commande :</strong>
-            <span style="color: #44403c;">#{escaped_comment}</span>
+          <div style="margin-top: 20px; padding: 14px; background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; font-size: 14px;">
+            <strong style="color: #78350f; display: block; margin-bottom: 6px;">📅 Disponibilité & Récupération (Février) :</strong>
+            <p style="margin: 0 0 8px 0; color: #78350f; font-weight: 600;">
+              L'hydromel est actuellement en cours de fermentation et d'affinage : vos bouteilles seront disponibles en <u>février</u> !
+            </p>
+            <span style="color: #44403c;">Commentaire retrait : #{escaped_comment}</span>
           </div>
 
           <p style="margin-top: 28px; font-size: 14px; color: #57534e; line-height: 1.5;">

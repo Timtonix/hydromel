@@ -276,14 +276,20 @@ defmodule HydromelWeb.OrderLive.New do
         <%!-- Hero Banner --%>
         <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-900 via-amber-800 to-yellow-700 p-6 sm:p-10 text-white shadow-xl shadow-amber-900/15">
           <div class="relative z-10 flex flex-col-reverse sm:flex-row items-center justify-between gap-6 sm:gap-8">
-            <div class="max-w-xl space-y-3 text-center sm:text-left">
-              <div class="inline-flex items-center gap-2 rounded-full bg-amber-400/20 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-amber-200 ring-1 ring-amber-300/30">
-                <img
-                  src={~p"/images/logo.png"}
-                  alt=""
-                  class="size-5 rounded-full bg-white p-0.5 object-contain"
-                />
-                <span>Brassin Collectif Merhzinsa</span>
+            <div class="max-w-xl space-y-3.5 text-center sm:text-left">
+              <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                <div class="inline-flex items-center gap-2 rounded-full bg-amber-400/20 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-amber-200 ring-1 ring-amber-300/30">
+                  <img
+                    src={~p"/images/logo.png"}
+                    alt=""
+                    class="size-5 rounded-full bg-white p-0.5 object-contain"
+                  />
+                  <span>Brassin Collectif Merhzinsa</span>
+                </div>
+                <div class="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3.5 py-1 text-xs font-extrabold uppercase tracking-wider text-amber-900 shadow-xs">
+                  <.icon name="hero-calendar-days-solid" class="size-4 text-amber-700" />
+                  <span>Disponibilité : Février</span>
+                </div>
               </div>
               <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">
                 Réservez votre part du brassin d'hydromel
@@ -293,6 +299,12 @@ defmodule HydromelWeb.OrderLive.New do
                 <strong>Druides</strong>
                 ! Utilisez le code d'un Druide pour réduire votre participation aux frais de <strong>-1€ par bouteille</strong>, et personnalisez votre étiquette avec votre propre photo et texte.
               </p>
+              <div class="inline-flex items-center gap-2.5 rounded-2xl bg-amber-950/55 px-4 py-2.5 text-xs sm:text-sm font-semibold text-amber-100 ring-1 ring-amber-300/40">
+                <.icon name="hero-clock-solid" class="size-5 shrink-0 text-amber-300" />
+                <span>
+                  L'hydromel est actuellement en cours de fermentation et d'affinage : <strong>vos bouteilles seront prêtes et disponibles en février !</strong>
+                </span>
+              </div>
             </div>
 
             <div class="flex shrink-0 items-center justify-center">
@@ -510,6 +522,16 @@ defmodule HydromelWeb.OrderLive.New do
                     </a>
                   </div>
                 <% end %>
+              </div>
+
+              <div class="flex items-start gap-3 rounded-2xl border border-amber-300 bg-amber-50/90 p-4 text-sm text-amber-950">
+                <.icon name="hero-calendar-days-solid" class="size-5 shrink-0 text-amber-700 mt-0.5" />
+                <div>
+                  <strong class="font-extrabold">Disponibilité prévue en février :</strong>
+                  <span>
+                    notre cuvée d'hydromel finit tranquillement de fermenter et de s'affiner. Vous serez prévenu(e) dès que vos bouteilles seront prêtes à être récupérées en février !
+                  </span>
+                </div>
               </div>
 
               <div class="pt-2 flex justify-end">
@@ -1130,7 +1152,21 @@ defmodule HydromelWeb.OrderLive.New do
                   </div>
                 </div>
 
-                <div class="space-y-1.5 pt-2">
+                <div class="space-y-3 pt-2">
+                  <div class="flex items-start gap-2.5 rounded-2xl border border-amber-300 bg-amber-50/70 p-3.5 text-xs sm:text-sm text-amber-950">
+                    <.icon
+                      name="hero-calendar-days-solid"
+                      class="size-5 shrink-0 text-amber-700 mt-0.5"
+                    />
+                    <div>
+                      <span class="font-extrabold">Disponibilité en février :</span>
+                      <span>
+                        l'hydromel sera prêt à être récupéré au mois de <strong>février</strong>
+                        (une fois la fermentation et la mise en bouteille terminées par les Druides).
+                      </span>
+                    </div>
+                  </div>
+
                   <%= if is_binary(@setting.pickup_info) and String.trim(@setting.pickup_info) != "" do %>
                     <p class="text-xs text-stone-600">
                       <.icon
