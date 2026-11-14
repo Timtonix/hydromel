@@ -18,13 +18,14 @@
 # For finding packages in Debian, search on https://packages.debian.org/.
 
 ARG BUILDER_IMAGE="docker.io/elixir:1.18-slim"
-ARG RUNNER_IMAGE="docker.io/debian:bookworm-slim"
+ARG RUNNER_IMAGE="docker.io/debian:trixie-slim"
 
 FROM ${BUILDER_IMAGE} AS builder
 
-# install build dependencies
+# install build dependencies (including ca-certificates for HTTPS downloads)
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends build-essential git \
+  && apt-get install -y --no-install-recommends build-essential git ca-certificates curl \
+  && update-ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
 # prepare build dir
