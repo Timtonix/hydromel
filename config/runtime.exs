@@ -59,35 +59,42 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+  non_empty_env = fn key ->
+    case System.get_env(key) do
+      nil -> nil
+      val -> if String.trim(val) == "", do: nil, else: String.trim(val)
+    end
+  end
+
   cond do
-    smtp_host = System.get_env("SMTP_HOST") ->
-      smtp_port = String.to_integer(System.get_env("SMTP_PORT", "587"))
-      smtp_user = System.get_env("SMTP_USER")
-      smtp_pass = System.get_env("SMTP_PASS")
+    smtp_host = non_empty_env.("SMTP_HOST") ->
+      smtp_port = String.to_integer(non_empty_env.("SMTP_PORT") || "587")
+      smtp_user = non_empty_env.("SMTP_USER")
+      smtp_pass = non_empty_env.("SMTP_PASS")
 
-      auth_opts =
-        if smtp_user && smtp_pass do
-          [auth: :always, username: smtp_user, password: smtp_pass]
-        else
-          [auth: :never]
-        end
-
-      config :hydromel, Hydromel.Mailer,
+      base_smtp_opts = [
         adapter: Swoosh.Adapters.SMTP,
         relay: smtp_host,
         port: smtp_port,
         tls: :if_available,
-        tls_options: [versions: [:"tlsv1.2", :"tlsv1.3"], verify: :verify_none],
-        auth: Keyword.get(auth_opts, :auth),
-        username: Keyword.get(auth_opts, :username),
-        password: Keyword.get(auth_opts, :password)
+        tls_options: [versions: [:"tlsv1.2", :"tlsv1.3"], verify: :verify_none]
+      ]
 
-    resend_key = System.get_env("RESEND_API_KEY") ->
+      auth_opts =
+        if smtp_user && smtp_pass do
+          [auth: :always, username: smtp_user, password: String.replace(smtp_pass, " ", "")]
+        else
+          [auth: :never]
+        end
+
+      config :hydromel, Hydromel.Mailer, Keyword.merge(base_smtp_opts, auth_opts)
+
+    resend_key = non_empty_env.("RESEND_API_KEY") ->
       config :hydromel, Hydromel.Mailer,
         adapter: Swoosh.Adapters.Resend,
         api_key: resend_key
 
-    brevo_key = System.get_env("BREVO_API_KEY") ->
+    brevo_key = non_empty_env.("BREVO_API_KEY") ->
       config :hydromel, Hydromel.Mailer,
         adapter: Swoosh.Adapters.Brevo,
         api_key: brevo_key

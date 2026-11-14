@@ -345,7 +345,24 @@ defmodule Hydromel.Orders do
       :ok
     else
       Task.Supervisor.start_child(Hydromel.TaskSupervisor, fn ->
-        OrderNotifier.deliver_order_confirmation(order, setting)
+        require Logger
+
+        try do
+          case OrderNotifier.deliver_order_confirmation(order, setting) do
+            {:ok, _} ->
+              :ok
+
+            {:error, reason} ->
+              Logger.warning(
+                "Échec de l'envoi de l'e-mail pour #{order.reference}: #{inspect(reason)}"
+              )
+          end
+        rescue
+          err ->
+            Logger.warning(
+              "Erreur lors de l'envoi de l'e-mail pour #{order.reference}: #{Exception.message(err)}"
+            )
+        end
       end)
     end
   end
